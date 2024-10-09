@@ -500,3 +500,299 @@ cd pos-java
 ls -la
 git add .
 git status
+git add .
+git commit -m"update"
+git push origin main
+#!/bin/bash
+# Define project root directory
+PROJECT_DIR="pos"
+# Create project directories
+mkdir -p $PROJECT_DIR/src/main/java/com/aenzbi/pos
+mkdir -p $PROJECT_DIR/src/test/java
+# Generate README file
+cat >$PROJECT_DIR/README.md <<EOL
+# Aenzbi POS Project
+
+This is a Point of Sale (POS) system implemented in Java with Maven as the build tool.
+
+## Features
+- Manage products
+- Record sales
+- Inventory management
+- User authentication with a GUI
+- Detailed sales reporting
+
+## How to Build and Run
+1. Navigate to the project directory:
+   \`\`\`
+   cd pos
+   \`\`\`
+2. Build the project and install dependencies:
+   \`\`\`
+   mvn clean install
+   \`\`\`
+3. Run the main application:
+   \`\`\`
+   mvn exec:java -Dexec.mainClass="com.aenzbi.pos.Main"
+   \`\`\`
+4. Run the tests:
+   \`\`\`
+   mvn test
+   \`\`\`
+EOL
+
+# Generate Main.java
+cat >$PROJECT_DIR/src/main/java/com/aenzbi/pos/Main.java <<EOL
+package com.aenzbi.pos;
+
+public class Main {
+    public static void main(String[] args) {
+        POSSystem posSystem = new POSSystem();
+        Login login = new Login();
+        login.addUser(new User("admin", "admin")); // Default user for testing
+        new POS_GUI(posSystem, login);
+    }
+}
+EOL
+
+# Generate POSSystem.java
+cat >$PROJECT_DIR/src/main/java/com/aenzbi/pos/POSSystem.java <<EOL
+package com.aenzbi.pos;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class POSSystem {
+    private List<Product> products = new ArrayList<>();
+    private List<Sale> sales = new ArrayList<>();
+
+    public void addProduct(Product product) {
+        products.add(product);
+    }
+
+    public void recordSale(Sale sale) {
+        sales.add(sale);
+    }
+
+    public List<Product> getProducts() {
+        return products;
+    }
+
+    public List<Sale> getSales() {
+        return sales;
+    }
+}
+EOL
+
+# Generate Product.java
+cat >$PROJECT_DIR/src/main/java/com/aenzbi/pos/Product.java <<EOL
+package com.aenzbi.pos;
+
+public class Product {
+    private String name;
+    private double price;
+    private int quantity;
+
+    public Product(String name, double price, int quantity) {
+        this.name = name;
+        this.price = price;
+        this.quantity = quantity;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void reduceQuantity(int qty) {
+        this.quantity -= qty;
+    }
+}
+EOL
+
+# Generate Sale.java
+cat >$PROJECT_DIR/src/main/java/com/aenzbi/pos/Sale.java <<EOL
+package com.aenzbi.pos;
+
+import java.time.LocalDateTime;
+
+public class Sale {
+    private Product product;
+    private int quantity;
+    private LocalDateTime date;
+
+    public Sale(Product product, int quantity) {
+        this.product = product;
+        this.quantity = quantity;
+        this.date = LocalDateTime.now();
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public LocalDateTime getDate() {
+        return date;
+    }
+}
+EOL
+
+# Generate Login.java
+cat >$PROJECT_DIR/src/main/java/com/aenzbi/pos/Login.java <<EOL
+package com.aenzbi.pos;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class Login {
+    private Map<String, String> users = new HashMap<>();
+
+    public void addUser(User user) {
+        users.put(user.getUsername(), user.getPassword());
+    }
+
+    public boolean authenticate(String username, String password) {
+        return users.containsKey(username) && users.get(username).equals(password);
+    }
+}
+EOL
+
+# Generate User.java
+cat >$PROJECT_DIR/src/main/java/com/aenzbi/pos/User.java <<EOL
+package com.aenzbi.pos;
+
+public class User {
+    private String username;
+    private String password;
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+}
+EOL
+
+# Generate POS_GUI.java (Simplified Swing GUI)
+cat >$PROJECT_DIR/src/main/java/com/aenzbi/pos/POS_GUI.java <<EOL
+package com.aenzbi.pos;
+
+import javax.swing.*;
+
+public class POS_GUI {
+    public POS_GUI(POSSystem posSystem, Login login) {
+        JFrame frame = new JFrame("Aenzbi POS System");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 300);
+
+        // Create UI elements
+        JPanel panel = new JPanel();
+        JLabel label = new JLabel("Welcome to Aenzbi POS");
+        JButton loginButton = new JButton("Login");
+
+        // Add elements to panel
+        panel.add(label);
+        panel.add(loginButton);
+
+        // Add panel to frame
+        frame.add(panel);
+        frame.setVisible(true);
+    }
+}
+EOL
+
+# Generate pom.xml for Maven dependencies
+cat > $PROJECT_DIR/pom.xml <<EOL
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://www.w3.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.aenzbi</groupId>
+    <artifactId>pos</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <dependencies>
+        <!-- JUnit 5 for Testing -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.8.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.8.1</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Compiler plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
+
+            <!-- Surefire plugin for running tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+EOL
+
+# Add .gitignore file
+cat > $PROJECT_DIR/.gitignore <<EOL
+# Ignore compiled files
+*.class
+/target
+EOL
+
+# Print completion message
+echo "Aenzbi POS project structure generated successfully."
+ls -la
+cd pos 
+ls -la
+cd src
+ls -la
+cd main
+ls -la
+cd java
+ls -la
+cd com
+ls -la
+cd aenzbi
+ls -la
+cd pos
+ls -la
+cd
